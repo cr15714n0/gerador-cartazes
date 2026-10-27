@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Gerador de Cartazes</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #0f172a;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--text);
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 36px 30px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .login-icon {
+      width: 60px;
+      height: 60px;
+      background: #eff6ff;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+    }
+
+    .login-header h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .login-header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .alert {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: #f8fafc;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+
+    .btn-submit:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="login-header">
+    <div class="login-icon">🖨️</div>
+    <h1>Gerador de Cartazes</h1>
+    <p>Área restrita. Autentique-se para continuar.</p>
+  </div>
+
+  <div id="alertBox" class="alert alert-error"></div>
+
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label for="username">Usuário</label>
+      <input type="text" id="username" placeholder="Digite seu usuário" required autocomplete="username" autofocus>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Senha</label>
+      <input type="password" id="password" placeholder="Digite sua senha" required autocomplete="current-password">
+    </div>
+
+    <div class="form-options">
+      <label class="checkbox-label">
+        <input type="checkbox" id="remember" checked>
+        Lembrar de mim
+      </label>
+      <span style="font-size: 11px; color: #16a34a; font-weight: 600;">🔒 Proteção Ativa</span>
+    </div>
+
+    <button type="submit" id="btnSubmit" class="btn-submit">
+      <span>Entrar no Sistema</span>
+    </button>
+  </form>
+
+  <div class="footer-note">
+    Protegido com autenticação server-side e anti-bruteforce.
+  </div>
+</div>
+
+<script>
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmit');
+    const alertBox = document.getElementById('alertBox');
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const remember = document.getElementById('remember').checked;
+
+    alertBox.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span>Verificando...</span>';
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, remember })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        btn.innerHTML = '<span>Sucesso! Entrando...</span>';
+        window.location.href = '/';
+      } else {
+        alertBox.textContent = data.message || 'Usuário ou senha incorretos.';
+        alertBox.style.display = 'block';
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+      }
+    } catch (err) {
+      alertBox.textContent = 'Erro ao conectar ao servidor. Tente novamente.';
+      alertBox.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      if (btn.innerHTML.includes('Verificando')) {
+        btn.innerHTML = '<span>Entrar no Sistema</span>';
+      }
+    }
+  }
+</script>
+
+</body>
+</html>

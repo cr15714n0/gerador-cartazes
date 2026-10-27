@@ -914,9 +914,49 @@
       background: #fee2e2;
     }
 
+    
+    .sidebar-user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+
+    .sidebar-user-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      font-weight: 700;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .btn-logout:hover {
+      background: #fee2e2;
+    }
+
     /* Impressão Limpa */
     @media print {
-      .login-overlay { display: none !important; }
+      
       body, html {
         background: transparent !important;
         margin: 0 !important;
@@ -958,41 +998,6 @@
   </style>
 </head>
 <body>
-
-<!-- TELA DE LOGIN OVERLAY -->
-<div class="login-overlay" id="loginOverlay">
-  <div class="login-card">
-    <div class="login-header">
-      <div class="login-icon">🖨️</div>
-      <h2>Gerador de Cartazes</h2>
-      <p>Acesso restrito. Faça login para continuar.</p>
-    </div>
-
-    <div class="login-error" id="loginError">
-      ⚠️ Usuário ou senha incorretos!
-    </div>
-
-    <form onsubmit="fazerLogin(event)">
-      <div class="form-group">
-        <label for="loginUsuario">Usuário</label>
-        <input type="text" id="loginUsuario" placeholder="Digite seu usuário" required autocomplete="username">
-      </div>
-
-      <div class="form-group">
-        <label for="loginSenha">Senha</label>
-        <input type="password" id="loginSenha" placeholder="Digite sua senha" required autocomplete="current-password">
-      </div>
-
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; font-size: 12px; color: #64748b;">
-        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 0;">
-          <input type="checkbox" id="loginLembrar" checked style="width: auto;"> Lembrar de mim
-        </label>
-      </div>
-
-      <button type="submit" class="login-btn">Entrar no Sistema</button>
-    </form>
-  </div>
-</div>
 
 <div class="app-container">
   
@@ -1099,63 +1104,23 @@ COXA SOBRE COXA 8,79 KG</textarea>
 </div>
 
 <script>
-  // Configuração de Acesso ao Sistema
-  const AUTH_CONFIG = {
-    usuario: 'admin',
-    senha: 'cartazes2026',
-    storageKey: 'cartazes_auth_session'
-  };
-
-  function verificarSessao() {
-    const sessao = localStorage.getItem(AUTH_CONFIG.storageKey) || sessionStorage.getItem(AUTH_CONFIG.storageKey);
-    const overlay = document.getElementById('loginOverlay');
-    const userSpan = document.getElementById('nomeUsuarioLogado');
-
-    if (sessao && sessao === AUTH_CONFIG.usuario) {
-      if (overlay) overlay.style.display = 'none';
-      if (userSpan) userSpan.textContent = sessao;
-      return true;
-    } else {
-      if (overlay) overlay.style.display = 'flex';
-      setTimeout(() => {
-        const inputUser = document.getElementById('loginUsuario');
-        if (inputUser) inputUser.focus();
-      }, 100);
-      return false;
-    }
+  async function carregarUsuario() {
+    try {
+      const res = await fetch('/api/me');
+      if (res.ok) {
+        const data = await res.json();
+        const el = document.getElementById('nomeUsuarioLogado');
+        if (el && data.user) el.textContent = data.user;
+      }
+    } catch (e) {}
   }
 
-  function fazerLogin(e) {
-    if (e) e.preventDefault();
-    const user = document.getElementById('loginUsuario').value.trim();
-    const pass = document.getElementById('loginSenha').value.trim();
-    const lembrar = document.getElementById('loginLembrar').checked;
-    const errorEl = document.getElementById('loginError');
-
-    if (user === AUTH_CONFIG.usuario && pass === AUTH_CONFIG.senha) {
-      if (errorEl) errorEl.style.display = 'none';
-      if (lembrar) {
-        localStorage.setItem(AUTH_CONFIG.storageKey, user);
-      } else {
-        sessionStorage.setItem(AUTH_CONFIG.storageKey, user);
-      }
-      verificarSessao();
-    } else {
-      if (errorEl) {
-        errorEl.style.display = 'block';
-        errorEl.textContent = '⚠️ Usuário ou senha incorretos!';
-      }
-      document.getElementById('loginSenha').value = '';
-      document.getElementById('loginSenha').focus();
+  async function fazerLogout() {
+    try {
+      await fetch('/api/logout', { method: 'POST' });
+    } finally {
+      window.location.href = '/login';
     }
-  }
-
-  function fazerLogout() {
-    localStorage.removeItem(AUTH_CONFIG.storageKey);
-    sessionStorage.removeItem(AUTH_CONFIG.storageKey);
-    document.getElementById('loginUsuario').value = '';
-    document.getElementById('loginSenha').value = '';
-    verificarSessao();
   }
 
   let catalogoProdutos = [];
@@ -1632,7 +1597,7 @@ COXA SOBRE COXA 8,79 KG</textarea>
   }
 
   window.onload = () => {
-    verificarSessao();
+    carregarUsuario();
     atualizarListaDeTexto();
   };
 </script>

@@ -1,0 +1,15 @@
+{
+  "name": "gerador-cartazes",
+  "version": "1.0.0",
+  "description": "Gerador de Cartazes com Autenticacao Server-Side Segura",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "helmet": "^7.1.0"
+  }
+}
