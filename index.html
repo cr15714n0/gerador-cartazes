@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Cartazes - Impressão Rápida</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-app: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --border-color: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    /* Coluna Lateral */
+    .sidebar {
+      width: 440px;
+      min-width: 420px;
+      max-width: 440px;
+      background: var(--card-bg);
+      border-right: 1px solid var(--border-color);
+      padding: 20px;
+      overflow-y: auto;
+      height: 100vh;
+      flex-shrink: 0;
+    }
+
+    .sidebar h1 { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+    .sidebar p.subtitle { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #334155;
+    }
+
+    select, input[type="text"], input[type="date"], input[type="number"], textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      background: #f8fafc;
+      transition: all 0.2s;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    textarea {
+      font-family: monospace;
+      height: 120px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .tip-box {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 8px 10px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12px;
+      color: #1e40af;
+      margin-top: 6px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 14px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3 { display: grid; grid-template-columns: 1.1fr 1fr 1.2fr; gap: 8px; }
+
+    .btn-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-outline { background: #f8fafc; border: 1px solid var(--border-color); color: #334155; }
+    .btn-outline:hover { background: #e2e8f0; }
+
+    .btn-print {
+      width: 100%;
+      background: #16a34a;
+      color: white;
+      padding: 12px;
+      font-size: 15px;
+      margin-top: 14px;
+    }
+    .btn-print:hover { background: #15803d; }
+
+    .switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      margin-bottom: 14px;
+    }
+    .switch-container span { font-size: 12px; font-weight: 600; color: #1e40af; }
+
+    /* Área de Pré-visualização */
+    .preview-area {
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .preview-header {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .badge-total {
+      background: #2563eb;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .folha-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 30px;
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .scale-wrapper {
+      zoom: 0.62;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      background: white;
+      line-height: normal;
+    }
+
+    /* Caixa Lateral de Controle */
+    .copias-control-box {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      width: 185px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 10px;
+    }
+
+    .control-sub-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px;
+      background: #f8fafc;
+    }
+
+    .copias-control-box span.titulo-copias {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #475569;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stepper-copias {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+
+    .btn-step {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      font-weight: bold;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .btn-step:hover { background: #f1f5f9; }
+
+    .input-copias {
+      flex: 1;
+      height: 30px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .btn-custom-toggle {
+      width: 100%;
+      padding: 5px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #334155;
+      text-align: center;
+    }
+    .btn-custom-toggle:hover { background: #f1f5f9; }
+
+    .individual-box {
+      display: none;
+      width: 100%;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #cbd5e1;
+      font-size: 11px;
+    }
+    .individual-box.active { display: block; }
+    .individual-box label { font-size: 10px; margin-bottom: 2px; }
+    .individual-box input, .individual-box select { font-size: 11px; padding: 4px 6px; margin-bottom: 5px; }
+
+    /* ========================================================
+       ESTRUTURA DAS FOLHAS
+       ======================================================== */
+    .sheet-page {
+      background: white;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+      flex-shrink: 0;
+    }
+
+    .sheet-a4 { width: 210mm; height: 297mm; }
+    .sheet-a4-land { width: 297mm; height: 210mm; }
+    .sheet-a3 { width: 297mm; height: 420mm; }
+    .sheet-2a5 {
+      width: 210mm;
+      height: 297mm;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .poster-item {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .sheet-2a5 .poster-item {
+      height: 148.5mm;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .sheet-2a5 .poster-item:last-child { border-bottom: none; }
+
+    /* Simulação Visual de Fundo */
+    .bg-artwork { display: none; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    .show-artwork .bg-artwork { display: block; }
+
+    .bg-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 28%;
+      background: #8b2326;
+      color: #ffffff;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42pt;
+      letter-spacing: 2px;
+      border-radius: 0 0 50% 50% / 0 0 25% 25%;
+    }
+
+    .bg-middle {
+      position: absolute;
+      top: 24%; left: 0; right: 0; bottom: 18%;
+      background: #ffd600;
+      border-radius: 50% 50% 0 0 / 18% 18% 0 0;
+    }
+
+    .bg-bottom {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 20%;
+      background: #8b2326;
+      clip-path: polygon(0 35%, 100% 0, 100% 100%, 0% 100%);
+    }
+
+    .poster-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ========================================================
+       1. FOLHA A4 VERTICAL
+       ======================================================== */
+    .sheet-a4 .title-container {
+      position: absolute;
+      top: 76mm;
+      left: 14mm;
+      right: 14mm;
+      max-height: 48mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .sheet-a4 .prod-title {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.92;
+      color: #000;
+      text-transform: uppercase;
+      transform: scaleY(1.15);
+      width: 100%;
+    }
+    .sheet-a4 .prod-carac {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #000;
+      margin-top: 2mm;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 0.92;
+    }
+
+    .sheet-a4 .price-box {
+      position: absolute;
+      top: 130mm;
+      left: 0;
+      right: 0;
+      height: 75mm;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .sheet-a4 .price-currency {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #df1b11;
+      margin-right: 6mm;
+      transform: scaleY(1.15);
+    }
+
+    .sheet-a4 .price-int {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      letter-spacing: -6px;
+      transform: scaleY(1.15);
+    }
+    .sheet-a4 .price-comma {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      margin: 0 4mm;
+      align-self: flex-start;
+      transform: scaleY(1.15);
+    }
+    .sheet-a4 .price-dec {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      letter-spacing: -3px;
+      transform: scaleY(1.15);
+    }
+
+    .sheet-a4 .price-unit {
+      position: absolute;
+      right: 25mm;
+      top: 180mm;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 36pt;
+      color: #000;
+      text-transform: lowercase;
+    }
+
+    .sheet-a4 .extra-info-left {
+      position: absolute;
+      left: 14mm;
+      bottom: 67mm;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 1.15;
+      text-align: left;
+    }
+    .sheet-a4 .fardo-txt {
+      font-size: 17pt;
+      color: #000000;
+      display: block;
+    }
+    .sheet-a4 .fardo-preco {
+      font-size: 21pt;
+      color: #df1b11;
+      display: block;
+    }
+
+    .sheet-a4 .validade-center {
+      position: absolute;
+      right: 14mm;
+      bottom: 73mm;
+      width: 90mm;
+      text-align: right;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 13.5pt;
+      color: #000;
+      line-height: 1.15;
+      letter-spacing: 0.2px;
+    }
+
+    /* ========================================================
+       2. FOLHA A4 PAISAGEM / HORIZONTAL
+       ======================================================== */
+    .sheet-a4-land .title-container {
+      position: absolute;
+      top: 48mm;
+      left: 20mm;
+      right: 20mm;
+      height: 34mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .sheet-a4-land .prod-title {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.95;
+      color: #000;
+      text-transform: uppercase;
+      transform: scaleY(1.15);
+    }
+    .sheet-a4-land .prod-carac {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #000;
+      margin-top: 2mm;
+    }
+    .sheet-a4-land .price-box {
+      position: absolute;
+      top: 86mm;
+      left: 0; right: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .sheet-a4-land .price-currency {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #df1b11;
+      margin-right: 5mm;
+      transform: scaleY(1.15);
+    }
+    .sheet-a4-land .price-int {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      letter-spacing: -4px;
+      transform: scaleY(1.15);
+    }
+    .sheet-a4-land .price-comma {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      margin: 0 3mm;
+      transform: scaleY(1.15);
+    }
+    .sheet-a4-land .price-dec {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      transform: scaleY(1.15);
+    }
+    .sheet-a4-land .price-unit {
+      position: absolute;
+      right: 56mm;
+      top: 115mm;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 32pt;
+      color: #000;
+    }
+    .sheet-a4-land .extra-info-left {
+      position: absolute;
+      left: 14mm;
+      bottom: 50mm;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 1.15;
+    }
+    .sheet-a4-land .fardo-txt { font-size: 15pt; color: #000; display: block; }
+    .sheet-a4-land .fardo-preco { font-size: 18pt; color: #df1b11; display: block; }
+
+    .sheet-a4-land .validade-center {
+      position: absolute;
+      right: 20mm;
+      bottom: 60mm;
+      width: 110mm;
+      text-align: right;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 12pt;
+      color: #000;
+      line-height: 1.15;
+    }
+
+    /* ========================================================
+       3. FOLHA 2x A5
+       ======================================================== */
+    .sheet-2a5 .title-container {
+      position: absolute;
+      top: 36mm;
+      left: 8mm;
+      right: 8mm;
+      height: 32mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .sheet-2a5 .prod-title {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.92;
+      color: #000;
+      text-transform: uppercase;
+      transform: scaleY(1.15);
+      width: 100%;
+    }
+    .sheet-2a5 .prod-carac {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #000;
+      margin-top: 2mm;
+      text-transform: uppercase;
+      line-height: 0.95;
+    }
+
+    .sheet-2a5 .price-box-a5 {
+      position: absolute;
+      top: 71mm;
+      left: 0;
+      right: 0;
+      height: 48mm;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .sheet-2a5 .price-currency {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #df1b11;
+      margin-right: 4mm;
+      transform: scaleY(1.15);
+    }
+
+    .sheet-2a5 .price-int {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      letter-spacing: -3px;
+      transform: scaleY(1.15);
+    }
+
+    .sheet-2a5 .centavos-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 0;
+    }
+
+    .sheet-2a5 .centavos-row {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .sheet-2a5 .price-comma {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      margin: 0 2mm;
+      align-self: flex-start;
+      transform: scaleY(1.15);
+    }
+
+    .sheet-2a5 .price-dec {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      transform: scaleY(1.15);
+    }
+
+    .sheet-2a5 .price-unit {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 20pt;
+      color: #000;
+      margin-top: 7mm;
+      margin-left: 3mm;
+      text-transform: lowercase;
+      transform: scaleY(1.1);
+    }
+
+    .sheet-2a5 .extra-info-left {
+      position: absolute;
+      left: 8mm;
+      bottom: 39mm;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 1.1;
+      text-align: left;
+    }
+    .sheet-2a5 .fardo-txt { font-size: 9pt; color: #000; display: block; }
+    .sheet-2a5 .fardo-preco { font-size: 11pt; color: #df1b11; display: block; }
+
+    .sheet-2a5 .validade-center {
+      position: absolute;
+      right: 6mm;
+      bottom: 50mm;
+      width: 58mm;
+      text-align: right;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 7.4pt;
+      color: #000;
+      line-height: 1.1;
+    }
+
+    /* ========================================================
+       4. FOLHA A3
+       ======================================================== */
+    .sheet-a3 .title-container {
+      position: absolute;
+      top: 110mm;
+      left: 20mm;
+      right: 20mm;
+      height: 65mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .sheet-a3 .prod-title {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.95;
+      color: #000;
+      transform: scaleY(1.15);
+    }
+    .sheet-a3 .prod-carac {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #000;
+      margin-top: 3mm;
+    }
+    .sheet-a3 .price-box {
+      position: absolute;
+      top: 185mm;
+      left: 0; right: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .sheet-a3 .price-currency {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      color: #df1b11;
+      margin-right: 8mm;
+      transform: scaleY(1.15);
+    }
+    .sheet-a3 .price-int {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      letter-spacing: -8px;
+      transform: scaleY(1.15);
+    }
+    .sheet-a3 .price-comma {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      margin: 0 6mm;
+      align-self: flex-start;
+      transform: scaleY(1.15);
+    }
+    .sheet-a3 .price-dec {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 0.72;
+      color: #df1b11;
+      letter-spacing: -4px;
+      transform: scaleY(1.15);
+    }
+    .sheet-a3 .price-unit {
+      position: absolute;
+      right: 35mm;
+      top: 255mm;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 50pt;
+      color: #000;
+      text-transform: lowercase;
+    }
+    .sheet-a3 .extra-info-left {
+      position: absolute;
+      left: 28mm;
+      bottom: 92mm;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      line-height: 1.2;
+    }
+    .sheet-a3 .fardo-txt { font-size: 24pt; color: #000; display: block; }
+    .sheet-a3 .fardo-preco { font-size: 30pt; color: #df1b11; display: block; }
+
+    .sheet-a3 .validade-center {
+      position: absolute;
+      right: 25mm;
+      bottom: 95mm;
+      width: 120mm;
+      text-align: right;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-size: 19pt;
+      color: #000;
+      line-height: 1.15;
+    }
+
+    /* Impressão Limpa */
+    @media print {
+      body, html {
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .app-container {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .sidebar, .copias-control-box, .preview-header { display: none !important; }
+      .preview-area {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        display: block !important;
+        overflow: visible !important;
+      }
+      .folha-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+        max-width: none !important;
+      }
+      .scale-wrapper {
+        zoom: 1 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+      }
+      .sheet-page {
+        margin: 0 !important;
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+      .sheet-2a5 .poster-item { border-bottom: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  
+  <div class="sidebar">
+    <h1>Gerador de Cartazes</h1>
+    <p class="subtitle">Impressão Rápida & Cópias Individuais</p>
+
+    <div class="btn-row">
+      <input type="file" id="inputXlsx" accept=".xlsx, .xls" style="display: none;" onchange="importarExcel(event)">
+      <button class="btn btn-outline" style="flex: 1;" onclick="document.getElementById('inputXlsx').click()">
+        📁 Importar Excel
+      </button>
+      <button class="btn btn-outline" onclick="baixarExemploPlanilha()">
+        📥 Modelo
+      </button>
+    </div>
+
+    <div class="form-group">
+      <label for="formatoPapel">Formato da Folha de Impressão</label>
+      <select id="formatoPapel" onchange="renderizarTudo()">
+        <option value="a4" selected>A4 Vertical (1 Cartaz)</option>
+        <option value="a4_land">A4 Horizontal / Paisagem (1 Cartaz)</option>
+        <option value="2a5">A4 com 2 folhas A5 (2 Cartazes)</option>
+        <option value="a3">A3 Vertical (1 Cartaz Grande)</option>
+      </select>
+    </div>
+
+    <div class="switch-container">
+      <div>
+        <span>Papel Pré-impresso (Sem fundo)</span>
+        <div style="font-size: 11px; color: #4b5563;">Imprime apenas texto e preços</div>
+      </div>
+      <input type="checkbox" id="checkPreImpresso" checked onchange="renderizarTudo()" style="width: 18px; height: 18px; cursor: pointer;">
+    </div>
+
+    <div class="form-group">
+      <label for="textoProdutos">Lista de Produtos</label>
+      <textarea id="textoProdutos" oninput="atualizarListaDeTexto()" placeholder="ARROZ TIO JOÃO *5KG* 24,90 CADA
+COXA SOBRE COXA 8,79 KG">BEBIDA LÁCTEA YOGUEDES *GARRAFÃO 900G SABORES* 5,99 CADA
+COXA SOBRE COXA 8,79 KG</textarea>
+      <div class="tip-box">
+        💡 Se apagar a unidade (ex: <code>CADA</code> ou <code>KG</code>), ela não será impressa.
+      </div>
+    </div>
+
+    <div class="section-title">🌐 Configuração Global (Todos os Cartazes)</div>
+
+    <!-- Validade Global (Vem zerada) -->
+    <div class="form-group">
+      <label>Oferta válida até (Data):</label>
+      <input type="date" id="dataFimGlobal" value="" onchange="atualizarApenasCamposExtras()">
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+        Gera: "Oferta válida até [DATA], enquanto durarem os estoques."
+      </div>
+    </div>
+
+    <!-- Embalagem / Atacado Global (Vem zerada) -->
+    <div class="form-group">
+      <label>Embalagem / Fardo / Atacado (Global)</label>
+      <div class="grid-3">
+        <div>
+          <label style="font-size: 11px; color: #64748b;">Tipo</label>
+          <select id="tipoEmbGlobal" onchange="atualizarApenasCamposExtras()">
+            <option value="" selected>Nenhum</option>
+            <option value="Fardo">Fardo</option>
+            <option value="Caixa">Caixa</option>
+            <option value="Pack">Pack</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 11px; color: #64748b;">Qtd</label>
+          <input type="number" id="qtdEmbGlobal" value="" placeholder="12" oninput="atualizarApenasCamposExtras()">
+        </div>
+        <div>
+          <label style="font-size: 11px; color: #64748b;">Total R$</label>
+          <input type="text" id="precoEmbGlobal" value="" placeholder="67,08" oninput="atualizarApenasCamposExtras()">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-print" onclick="window.print()">
+      🖨️ Imprimir Cartazes
+    </button>
+  </div>
+
+  <div class="preview-area" id="previewArea">
+    <div class="preview-header">
+      <h2 style="font-size: 15px; color: #475569;">Pré-visualização das Folhas</h2>
+      <span id="badgeTotalFolhas" class="badge-total">0 folhas</span>
+    </div>
+    <div id="previewContainer"></div>
+  </div>
+
+</div>
+
+<script>
+  let catalogoProdutos = [];
+
+  function parseLinha(linha) {
+    const texto = linha.trim();
+    if (!texto) return null;
+
+    let carac = '';
+    let descricao = texto;
+
+    const matchCarac = texto.match(/\*(.*?)\*/);
+    if (matchCarac) {
+      carac = matchCarac[1].trim();
+      descricao = texto.replace(/\*.*?\*/, '').replace(/\s+/g, ' ');
+    }
+
+    const regex = /^(.*?)\s+(\d+[\.,]\d{2})\s*(.*)$/i;
+    const match = descricao.match(regex);
+
+    if (match) {
+      const precoStr = match[2].replace('.', ',');
+      const partes = precoStr.split(',');
+      return {
+        descricao: match[1].trim(),
+        caracteristica: carac,
+        inteiro: partes[0],
+        centavos: partes[1],
+        unidade: match[3] ? match[3].trim() : '',
+        copias: 1,
+        customAtivo: false,
+        customDataFim: '',
+        customTipoEmb: '',
+        customQtdEmb: '',
+        customPrecoEmb: ''
+      };
+    }
+    return null;
+  }
+
+  function atualizarListaDeTexto() {
+    const textoBruto = document.getElementById('textoProdutos').value;
+    const linhas = textoBruto.split('\n');
+    
+    const dadosAntigos = {};
+    catalogoProdutos.forEach(p => {
+      dadosAntigos[p.descricao] = {
+        copias: p.copias,
+        customAtivo: p.customAtivo,
+        customDataFim: p.customDataFim,
+        customTipoEmb: p.customTipoEmb,
+        customQtdEmb: p.customQtdEmb,
+        customPrecoEmb: p.customPrecoEmb
+      };
+    });
+
+    catalogoProdutos = [];
+    linhas.forEach(linha => {
+      const item = parseLinha(linha);
+      if (item) {
+        if (dadosAntigos[item.descricao]) {
+          Object.assign(item, dadosAntigos[item.descricao]);
+        }
+        catalogoProdutos.push(item);
+      }
+    });
+
+    renderizarTudo();
+  }
+
+  function alterarCopias(index, delta) {
+    if (catalogoProdutos[index]) {
+      catalogoProdutos[index].copias = Math.max(0, catalogoProdutos[index].copias + delta);
+      renderizarTudo();
+    }
+  }
+
+  function definirCopiasDireto(index, valor) {
+    const num = parseInt(valor, 10);
+    if (catalogoProdutos[index] && !isNaN(num)) {
+      catalogoProdutos[index].copias = Math.max(0, num);
+      renderizarTudo();
+    }
+  }
+
+  function toggleCustom(index) {
+    if (catalogoProdutos[index]) {
+      catalogoProdutos[index].customAtivo = !catalogoProdutos[index].customAtivo;
+      renderizarTudo();
+    }
+  }
+
+  function updateCustomField(index, field, value) {
+    if (catalogoProdutos[index]) {
+      catalogoProdutos[index][field] = value;
+      atualizarApenasCamposExtras();
+    }
+  }
+
+  function formatarData(dataStr) {
+    if (!dataStr) return '';
+    const partes = dataStr.split('-');
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+  function importarExcel(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+      let textoGerado = [];
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (row && row.length >= 3) {
+          const desc = row[0] || '';
+          const carac = row[1] ? ` *${row[1]}*` : '';
+          let preco = row[2] !== undefined ? String(row[2]).replace('.', ',') : '0,00';
+          if (!preco.includes(',')) preco += ',00';
+          const unid = row[3] ? row[3] : '';
+          textoGerado.push(`${desc}${carac} ${preco} ${unid}`);
+        }
+      }
+
+      if (textoGerado.length > 0) {
+        document.getElementById('textoProdutos').value = textoGerado.join('\n');
+        atualizarListaDeTexto();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function baixarExemploPlanilha() {
+    const ws_data = [
+      ["Descrição", "Característica", "Preço", "Unidade"],
+      ["ARROZ TIO JOÃO", "5KG", 24.90, "cada"],
+      ["FEIJÃO CAMIL", "1KG", 7.49, "cada"],
+      ["BANANA PRATA", "", 3.99, "kg"]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Produtos");
+    XLSX.writeFile(wb, "modelo_produtos.xlsx");
+  }
+
+  function calcularEstiloTitulo(desc, carac, formato) {
+    const lenDesc = desc.length;
+    const lenCarac = carac ? carac.length : 0;
+    const total = lenDesc + lenCarac;
+
+    if (formato === '2a5') {
+      if (total > 36) return { fontTitulo: '23pt', fontCarac: '15pt' };
+      if (total > 24) return { fontTitulo: '28pt', fontCarac: '18pt' };
+      return { fontTitulo: '34pt', fontCarac: '22pt' };
+    } else if (formato === 'a3') {
+      if (total > 38) return { fontTitulo: '52pt', fontCarac: '32pt' };
+      if (total > 24) return { fontTitulo: '64pt', fontCarac: '40pt' };
+      return { fontTitulo: '78pt', fontCarac: '46pt' };
+    } else if (formato === 'a4_land') {
+      if (total > 36) return { fontTitulo: '32pt', fontCarac: '20pt' };
+      if (total > 22) return { fontTitulo: '38pt', fontCarac: '24pt' };
+      return { fontTitulo: '46pt', fontCarac: '28pt' };
+    } else {
+      if (total > 38) return { fontTitulo: '36pt', fontCarac: '22pt' };
+      if (total > 24) return { fontTitulo: '44pt', fontCarac: '26pt' };
+      return { fontTitulo: '52pt', fontCarac: '30pt' };
+    }
+  }
+
+  function calcularEstiloPreco(inteiroStr, formato) {
+    const digitos = inteiroStr.length;
+
+    if (formato === '2a5') {
+      if (digitos >= 3) return { fontInt: '95pt', fontVirg: '55pt', fontDec: '55pt', fontCifrao: '20pt', topCifrao: '14mm' };
+      return { fontInt: '130pt', fontVirg: '75pt', fontDec: '75pt', fontCifrao: '26pt', topCifrao: '9mm' };
+    } else if (formato === 'a3') {
+      if (digitos >= 3) return { fontInt: '280pt', fontVirg: '150pt', fontDec: '150pt', fontCifrao: '48pt', topCifrao: '45mm' };
+      return { fontInt: '380pt', fontVirg: '210pt', fontDec: '210pt', fontCifrao: '60pt', topCifrao: '50mm' };
+    } else if (formato === 'a4_land') {
+      if (digitos >= 3) return { fontInt: '140pt', fontVirg: '80pt', fontDec: '80pt', fontCifrao: '28pt', topCifrao: '22mm' };
+      return { fontInt: '190pt', fontVirg: '110pt', fontDec: '110pt', fontCifrao: '38pt', topCifrao: '24mm' };
+    } else {
+      if (digitos >= 3) return { fontInt: '175pt', fontVirg: '100pt', fontDec: '100pt', fontCifrao: '34pt', topCifrao: '26mm' };
+      return { fontInt: '260pt', fontVirg: '150pt', fontDec: '150pt', fontCifrao: '44pt', topCifrao: '32mm' };
+    }
+  }
+
+  function resolverDadosExtras(item) {
+    const dFimGlob = document.getElementById('dataFimGlobal').value;
+    const tEmbGlob = document.getElementById('tipoEmbGlobal').value;
+    const qEmbGlob = document.getElementById('qtdEmbGlobal').value;
+    const pEmbGlob = document.getElementById('precoEmbGlobal').value;
+
+    const dataFim = (item.customAtivo && item.customDataFim) ? item.customDataFim : dFimGlob;
+    const tipoEmb = (item.customAtivo && item.customTipoEmb) ? item.customTipoEmb : tEmbGlob;
+    const qtdEmb = (item.customAtivo && item.customQtdEmb) ? item.customQtdEmb : qEmbGlob;
+    const precoEmb = (item.customAtivo && item.customPrecoEmb) ? item.customPrecoEmb : pEmbGlob;
+
+    let atacadoHTML = '';
+    if (tipoEmb && qtdEmb && precoEmb) {
+      atacadoHTML = `
+        <span class="fardo-txt">${tipoEmb} com ${qtdEmb} unidades</span>
+        <span class="fardo-preco">R$ ${precoEmb}</span>
+      `;
+    }
+
+    let validadeHTML = '';
+    if (dataFim) {
+      validadeHTML = `Oferta válida até ${formatarData(dataFim)}, enquanto durarem os estoques.`;
+    }
+
+    return { atacadoHTML, validadeHTML };
+  }
+
+  function atualizarApenasCamposExtras() {
+    const itemsEl = document.querySelectorAll('.poster-item');
+    itemsEl.forEach(el => {
+      const idx = el.dataset.idx;
+      if (idx !== undefined && catalogoProdutos[idx]) {
+        const item = catalogoProdutos[idx];
+        const { atacadoHTML, validadeHTML } = resolverDadosExtras(item);
+
+        let atacadoDiv = el.querySelector('.extra-info-left');
+        let validadeDiv = el.querySelector('.validade-center');
+
+        if (atacadoDiv) atacadoDiv.innerHTML = atacadoHTML;
+        if (validadeDiv) validadeDiv.innerHTML = validadeHTML;
+      }
+    });
+  }
+
+  function gerarControleProdutoHTML(prod, idx, rotulo) {
+    return `
+      <div class="control-sub-box">
+        <span class="titulo-copias">${rotulo}</span>
+        <div style="font-size: 11px; font-weight: 600; color: #1e293b; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${prod.descricao}
+        </div>
+        <div class="stepper-copias">
+          <button class="btn-step" onclick="alterarCopias(${idx}, -1)">–</button>
+          <input type="text" class="input-copias" value="${prod.copias}" onchange="definirCopiasDireto(${idx}, this.value)">
+          <button class="btn-step" onclick="alterarCopias(${idx}, 1)">+</button>
+        </div>
+        <button class="btn-custom-toggle" onclick="toggleCustom(${idx})">
+          ${prod.customAtivo ? '⚙️ Personalizado (Ativo)' : '⚙️ Personalizar'}
+        </button>
+
+        <div class="individual-box ${prod.customAtivo ? 'active' : ''}">
+          <label>Validade Até:</label>
+          <input type="date" value="${prod.customDataFim}" onchange="updateCustomField(${idx}, 'customDataFim', this.value)">
+          
+          <label>Embalagem:</label>
+          <select onchange="updateCustomField(${idx}, 'customTipoEmb', this.value)">
+            <option value="" ${prod.customTipoEmb === '' ? 'selected' : ''}>Padrão Global</option>
+            <option value="Fardo" ${prod.customTipoEmb === 'Fardo' ? 'selected' : ''}>Fardo</option>
+            <option value="Caixa" ${prod.customTipoEmb === 'Caixa' ? 'selected' : ''}>Caixa</option>
+            <option value="Pack" ${prod.customTipoEmb === 'Pack' ? 'selected' : ''}>Pack</option>
+          </select>
+
+          <label>Qtd:</label>
+          <input type="number" placeholder="Ex: 12" value="${prod.customQtdEmb}" oninput="updateCustomField(${idx}, 'customQtdEmb', this.value)">
+
+          <label>Preço Total (R$):</label>
+          <input type="text" placeholder="67,08" value="${prod.customPrecoEmb}" oninput="updateCustomField(${idx}, 'customPrecoEmb', this.value)">
+        </div>
+      </div>
+    `;
+  }
+
+  function renderizarTudo() {
+    const formato = document.getElementById('formatoPapel').value;
+    const ehPreImpresso = document.getElementById('checkPreImpresso').checked;
+    const container = document.getElementById('previewContainer');
+    container.innerHTML = '';
+
+    const templateCartazPadrao = (item, idx) => {
+      const { atacadoHTML, validadeHTML } = resolverDadosExtras(item);
+      const estilos = calcularEstiloTitulo(item.descricao, item.caracteristica, formato);
+      const precoEstilos = calcularEstiloPreco(item.inteiro, formato);
+      return `
+        <div class="poster-item ${ehPreImpresso ? '' : 'show-artwork'}" data-idx="${idx}">
+          <div class="bg-artwork">
+            <div class="bg-top">OFERTA</div>
+            <div class="bg-middle"></div>
+            <div class="bg-bottom"></div>
+          </div>
+          <div class="poster-content">
+            <div class="title-container">
+              <div class="prod-title" style="font-size: ${estilos.fontTitulo};">${item.descricao}</div>
+              ${item.caracteristica ? `<div class="prod-carac" style="font-size: ${estilos.fontCarac};">${item.caracteristica}</div>` : ''}
+            </div>
+
+            <div class="price-box">
+              <span class="price-currency" style="font-size: ${precoEstilos.fontCifrao}; margin-top: ${precoEstilos.topCifrao};">R$</span>
+              <span class="price-int" style="font-size: ${precoEstilos.fontInt};">${item.inteiro}</span>
+              <span class="price-comma" style="font-size: ${precoEstilos.fontVirg};">,</span>
+              <span class="price-dec" style="font-size: ${precoEstilos.fontDec};">${item.centavos}</span>
+            </div>
+
+            ${item.unidade ? `<div class="price-unit">${item.unidade}</div>` : ''}
+
+            <div class="extra-info-left">${atacadoHTML}</div>
+            
+            <div class="validade-center">${validadeHTML}</div>
+          </div>
+        </div>
+      `;
+    };
+
+    const templateCartazA5 = (item, idx) => {
+      const { atacadoHTML, validadeHTML } = resolverDadosExtras(item);
+      const estilos = calcularEstiloTitulo(item.descricao, item.caracteristica, '2a5');
+      const precoEstilos = calcularEstiloPreco(item.inteiro, '2a5');
+      return `
+        <div class="poster-item ${ehPreImpresso ? '' : 'show-artwork'}" data-idx="${idx}">
+          <div class="bg-artwork">
+            <div class="bg-top">OFERTA</div>
+            <div class="bg-middle"></div>
+            <div class="bg-bottom"></div>
+          </div>
+          <div class="poster-content">
+            <div class="title-container">
+              <div class="prod-title" style="font-size: ${estilos.fontTitulo};">${item.descricao}</div>
+              ${item.caracteristica ? `<div class="prod-carac" style="font-size: ${estilos.fontCarac};">${item.caracteristica}</div>` : ''}
+            </div>
+            
+            <div class="price-box-a5">
+              <span class="price-currency" style="font-size: ${precoEstilos.fontCifrao}; margin-top: ${precoEstilos.topCifrao};">R$</span>
+              <span class="price-int" style="font-size: ${precoEstilos.fontInt};">${item.inteiro}</span>
+              <div class="centavos-container">
+                <div class="centavos-row">
+                  <span class="price-comma" style="font-size: ${precoEstilos.fontVirg};">,</span>
+                  <span class="price-dec" style="font-size: ${precoEstilos.fontDec};">${item.centavos}</span>
+                </div>
+                ${item.unidade ? `<span class="price-unit">${item.unidade}</span>` : ''}
+              </div>
+            </div>
+
+            <div class="extra-info-left">${atacadoHTML}</div>
+            
+            <div class="validade-center">${validadeHTML}</div>
+          </div>
+        </div>
+      `;
+    };
+
+    let totalFolhas = 0;
+
+    if (formato === '2a5') {
+      let filaA5 = [];
+      catalogoProdutos.forEach((prod, idx) => {
+        for (let c = 0; c < prod.copias; c++) {
+          filaA5.push({ item: prod, origIndex: idx });
+        }
+      });
+
+      for (let i = 0; i < filaA5.length; i += 2) {
+        totalFolhas++;
+        const item1 = filaA5[i].item;
+        const idx1 = filaA5[i].origIndex;
+        const item2 = filaA5[i + 1] ? filaA5[i + 1].item : null;
+        const idx2 = item2 ? filaA5[i + 1].origIndex : null;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'folha-wrapper';
+
+        let innerFolha = templateCartazA5(item1, idx1);
+        if (item2) innerFolha += templateCartazA5(item2, idx2);
+
+        let controlesHTML = gerarControleProdutoHTML(item1, idx1, 'Superior (A5 #1)');
+        if (item2) {
+          controlesHTML += gerarControleProdutoHTML(item2, idx2, 'Inferior (A5 #2)');
+        }
+
+        wrapper.innerHTML = `
+          <div class="scale-wrapper">
+            <div class="sheet-page sheet-2a5">
+              ${innerFolha}
+            </div>
+          </div>
+          <div class="copias-control-box">
+            <div style="font-size: 11px; font-weight: 800; color: #2563eb; text-align: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+              FOLHA A4 (2x A5)
+            </div>
+            ${controlesHTML}
+          </div>
+        `;
+        container.appendChild(wrapper);
+      }
+
+    } else {
+      let classeFolha = 'sheet-a4';
+      if (formato === 'a4_land') classeFolha = 'sheet-a4-land';
+      if (formato === 'a3') classeFolha = 'sheet-a3';
+
+      catalogoProdutos.forEach((prod, idx) => {
+        if (prod.copias <= 0) return;
+
+        for (let c = 1; c <= prod.copias; c++) {
+          totalFolhas++;
+          const wrapper = document.createElement('div');
+          wrapper.className = 'folha-wrapper';
+
+          wrapper.innerHTML = `
+            <div class="scale-wrapper">
+              <div class="sheet-page ${classeFolha}">
+                ${templateCartazPadrao(prod, idx)}
+              </div>
+            </div>
+            <div class="copias-control-box">
+              <span class="titulo-copias">Cópias</span>
+              <div class="stepper-copias">
+                <button class="btn-step" onclick="alterarCopias(${idx}, -1)">–</button>
+                <input type="text" class="input-copias" value="${prod.copias}" onchange="definirCopiasDireto(${idx}, this.value)">
+                <button class="btn-step" onclick="alterarCopias(${idx}, 1)">+</button>
+              </div>
+              <span style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                Cópia ${c} de ${prod.copias}
+              </span>
+
+              <button class="btn-custom-toggle" onclick="toggleCustom(${idx})">
+                ${prod.customAtivo ? '⚙️ Personalizado (Ativo)' : '⚙️ Personalizar Este'}
+              </button>
+
+              <div class="individual-box ${prod.customAtivo ? 'active' : ''}">
+                <label>Validade Até:</label>
+                <input type="date" value="${prod.customDataFim}" onchange="updateCustomField(${idx}, 'customDataFim', this.value)">
+                
+                <label>Tipo Embalagem:</label>
+                <select onchange="updateCustomField(${idx}, 'customTipoEmb', this.value)">
+                  <option value="" ${prod.customTipoEmb === '' ? 'selected' : ''}>Padrão Global</option>
+                  <option value="Fardo" ${prod.customTipoEmb === 'Fardo' ? 'selected' : ''}>Fardo</option>
+                  <option value="Caixa" ${prod.customTipoEmb === 'Caixa' ? 'selected' : ''}>Caixa</option>
+                  <option value="Pack" ${prod.customTipoEmb === 'Pack' ? 'selected' : ''}>Pack</option>
+                </select>
+
+                <label>Qtd:</label>
+                <input type="number" placeholder="Ex: 12" value="${prod.customQtdEmb}" oninput="updateCustomField(${idx}, 'customQtdEmb', this.value)">
+
+                <label>Preço Total (R$):</label>
+                <input type="text" placeholder="67,08" value="${prod.customPrecoEmb}" oninput="updateCustomField(${idx}, 'customPrecoEmb', this.value)">
+              </div>
+            </div>
+          `;
+          container.appendChild(wrapper);
+        }
+      });
+    }
+
+    document.getElementById('badgeTotalFolhas').textContent = `${totalFolhas} folha(s) no total`;
+    ajustarTamanhoFolhaImpressao(formato);
+  }
+
+  function ajustarTamanhoFolhaImpressao(formato) {
+    let styleTag = document.getElementById('print-page-style');
+    if (!styleTag) {
+      styleTag = document.createElement('style');
+      styleTag.id = 'print-page-style';
+      document.head.appendChild(styleTag);
+    }
+
+    if (formato === 'a3') {
+      styleTag.innerHTML = `@media print { @page { size: A3 portrait; margin: 0; } }`;
+    } else if (formato === 'a4_land') {
+      styleTag.innerHTML = `@media print { @page { size: A4 landscape; margin: 0; } }`;
+    } else {
+      styleTag.innerHTML = `@media print { @page { size: A4 portrait; margin: 0; } }`;
+    }
+  }
+
+  window.onload = () => {
+    atualizarListaDeTexto();
+  };
+</script>
+
+</body>
+</html>
