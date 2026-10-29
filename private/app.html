@@ -550,6 +550,83 @@
       display: none;
     }
 
+    /* Estilos de Arrastar e Soltar com o Mouse (Drag & Drop) */
+    .drag-item {
+      cursor: grab;
+      user-select: none;
+      transition: outline 0.15s, background-color 0.15s;
+    }
+    .drag-item:hover {
+      outline: 2px dashed #2563eb !important;
+      outline-offset: 3px;
+      background-color: rgba(37, 99, 235, 0.05);
+      border-radius: 4px;
+    }
+    .drag-item.is-dragging {
+      cursor: grabbing !important;
+      outline: 2px solid #2563eb !important;
+      outline-offset: 4px;
+      background-color: rgba(37, 99, 235, 0.08);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+      z-index: 9999 !important;
+    }
+    .drag-item-child {
+      cursor: ew-resize;
+      display: inline-block;
+      user-select: none;
+      transition: outline 0.15s;
+    }
+    .drag-item-child:hover {
+      outline: 2px dashed #2563eb !important;
+      outline-offset: 2px;
+      background-color: rgba(37, 99, 235, 0.1);
+      border-radius: 4px;
+    }
+    .badge-drag-hint {
+      font-size: 11px;
+      font-weight: 600;
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .drag-hud-badge {
+      position: fixed;
+      z-index: 100000;
+      pointer-events: none;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+      display: none;
+      font-family: 'Inter', sans-serif;
+      transform: translate(14px, 14px);
+      white-space: nowrap;
+    }
+    .drag-saved-toast {
+      position: fixed;
+      top: 66px;
+      right: 24px;
+      z-index: 100000;
+      background: #16a34a;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
     /* Editor de Texto de Produtos */
     .textarea-wrapper {
       position: relative;
@@ -1507,6 +1584,16 @@
         object-fit: fill !important;
         display: block !important;
       }
+      /* Desativa cursores e contornos de drag no modo de impressão */
+      .drag-item, .drag-item-child {
+        cursor: default !important;
+        outline: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .drag-hud-badge, .drag-saved-toast, .badge-drag-hint {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -1686,6 +1773,7 @@ COXA SOBRE COXA 8,79 KG</textarea>
           <span>📄</span> Pré-visualização de Impressão
         </div>
         <span id="badgeTotalFolhas" class="badge-folhas-top">2 folha(s) no total</span>
+        <span class="badge-drag-hint" title="Clique e segure em qualquer item do cartaz para reposicioná-lo">✋ Arraste qualquer item com o mouse para mover</span>
       </div>
 
       <div style="display: flex; align-items: center; gap: 12px;">
@@ -1705,6 +1793,13 @@ COXA SOBRE COXA 8,79 KG</textarea>
     <!-- Área com Scroll dos Cartazes -->
     <div class="preview-scroll-container">
       <div id="previewContainer"></div>
+    </div>
+
+    <!-- Elementos Flutuantes do Arrastar e Soltar (Drag & Drop) -->
+    <div id="dragHudBadge" class="drag-hud-badge"></div>
+    <div id="dragSavedToast" class="drag-saved-toast">
+      <span>💾</span>
+      <span>Posição salva com sucesso!</span>
     </div>
 
   </div>
@@ -2053,23 +2148,23 @@ COXA SOBRE COXA 8,79 KG</textarea>
             <img src="${imgFundo}" alt="Fundo Rede Xereta" class="bg-img-artwork">
           </div>
           <div class="poster-content">
-            <div class="title-container">
+            <div class="title-container drag-item" data-drag="titulo" title="Clique e arraste para posicionar o título">
               <div class="prod-title" style="font-size: ${estilos.fontTitulo};">${item.descricao}</div>
               ${item.caracteristica ? `<div class="prod-carac" style="font-size: ${estilos.fontCarac};">${item.caracteristica}</div>` : ''}
             </div>
 
-            <div class="price-box">
-              <span class="price-currency" style="font-size: ${precoEstilos.fontCifrao}; margin-top: ${precoEstilos.topCifrao};">R$</span>
+            <div class="price-box drag-item" data-drag="preco" title="Clique e arraste para posicionar o preço">
+              <span class="price-currency drag-item-child" data-drag="cifrao" title="Arraste para ajustar o espaço do R$" style="font-size: ${precoEstilos.fontCifrao}; margin-top: ${precoEstilos.topCifrao};">R$</span>
               <span class="price-int" style="font-size: ${precoEstilos.fontInt};">${item.inteiro}</span>
               <span class="price-comma" style="font-size: ${precoEstilos.fontVirg};">,</span>
               <span class="price-dec" style="font-size: ${precoEstilos.fontDec};">${item.centavos}</span>
             </div>
 
-            ${item.unidade ? `<div class="price-unit">${item.unidade}</div>` : ''}
+            ${item.unidade ? `<div class="price-unit drag-item" data-drag="unidade" title="Clique e arraste para posicionar a unidade">${item.unidade}</div>` : ''}
 
-            <div class="extra-info-left">${atacadoHTML}</div>
+            <div class="extra-info-left drag-item" data-drag="atacado" title="Clique e arraste para posicionar o atacado">${atacadoHTML}</div>
             
-            <div class="validade-center">${validadeHTML}</div>
+            <div class="validade-center drag-item" data-drag="validade" title="Clique e arraste para posicionar a validade">${validadeHTML}</div>
           </div>
         </div>
       `;
@@ -2085,26 +2180,26 @@ COXA SOBRE COXA 8,79 KG</textarea>
             <img src="/assets/bg-portrait.png" alt="Fundo Rede Xereta" class="bg-img-artwork">
           </div>
           <div class="poster-content">
-            <div class="title-container">
+            <div class="title-container drag-item" data-drag="titulo" title="Clique e arraste para posicionar o título">
               <div class="prod-title" style="font-size: ${estilos.fontTitulo};">${item.descricao}</div>
               ${item.caracteristica ? `<div class="prod-carac" style="font-size: ${estilos.fontCarac};">${item.caracteristica}</div>` : ''}
             </div>
             
-            <div class="price-box-a5">
-              <span class="price-currency" style="font-size: ${precoEstilos.fontCifrao}; margin-top: ${precoEstilos.topCifrao};">R$</span>
+            <div class="price-box-a5 drag-item" data-drag="preco" title="Clique e arraste para posicionar o preço">
+              <span class="price-currency drag-item-child" data-drag="cifrao" title="Arraste para ajustar o espaço do R$" style="font-size: ${precoEstilos.fontCifrao}; margin-top: ${precoEstilos.topCifrao};">R$</span>
               <span class="price-int" style="font-size: ${precoEstilos.fontInt};">${item.inteiro}</span>
               <div class="centavos-container">
                 <div class="centavos-row">
                   <span class="price-comma" style="font-size: ${precoEstilos.fontVirg};">,</span>
                   <span class="price-dec" style="font-size: ${precoEstilos.fontDec};">${item.centavos}</span>
                 </div>
-                ${item.unidade ? `<span class="price-unit">${item.unidade}</span>` : ''}
+                ${item.unidade ? `<span class="price-unit drag-item" data-drag="unidade" title="Clique e arraste para posicionar a unidade">${item.unidade}</span>` : ''}
               </div>
             </div>
 
-            <div class="extra-info-left">${atacadoHTML}</div>
+            <div class="extra-info-left drag-item" data-drag="atacado" title="Clique e arraste para posicionar o atacado">${atacadoHTML}</div>
             
-            <div class="validade-center">${validadeHTML}</div>
+            <div class="validade-center drag-item" data-drag="validade" title="Clique e arraste para posicionar a validade">${validadeHTML}</div>
           </div>
         </div>
       `;
@@ -2489,11 +2584,202 @@ COXA SOBRE COXA 8,79 KG</textarea>
     container.innerHTML = html;
   }
 
+  // ========================================================
+  // MOTOR DE ARRASTAR E SOLTAR VISUAL (DRAG & DROP DIRETO NO CARTAZ)
+  // ========================================================
+  let dragAtivo = null;
+  let timeoutToastSalvo = null;
+
+  function salvarPosicoesSilencioso() {
+    try {
+      localStorage.setItem('cartazes_posicoes_v2', JSON.stringify(configPosicoes));
+      const toast = document.getElementById('dragSavedToast');
+      if (toast) {
+        toast.style.display = 'flex';
+        clearTimeout(timeoutToastSalvo);
+        timeoutToastSalvo = setTimeout(() => {
+          toast.style.display = 'none';
+        }, 2200);
+      }
+    } catch (e) {}
+  }
+
+  function inicializarMotorDrag() {
+    const previewContainer = document.getElementById('previewContainer');
+    if (!previewContainer) return;
+
+    previewContainer.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return; // Apenas clique com botão principal (esquerdo)
+
+      const targetEl = e.target.closest('[data-drag]');
+      if (!targetEl) return;
+
+      const sheet = targetEl.closest('.sheet-page');
+      if (!sheet) return;
+
+      const formato = document.getElementById('formatoPapel').value;
+      if (!configPosicoes[formato]) {
+        configPosicoes[formato] = Object.assign({}, posicoesPadrao[formato]);
+      }
+
+      const tipo = targetEl.getAttribute('data-drag');
+      const sheetRect = sheet.getBoundingClientRect();
+      const sheetWidthMm = (formato === 'a4_land' || formato === 'a3') ? 297 : 210;
+      const pxPorMm = sheetRect.width / sheetWidthMm;
+
+      dragAtivo = {
+        element: targetEl,
+        tipo: tipo,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialConfig: JSON.parse(JSON.stringify(configPosicoes[formato])),
+        formato: formato,
+        pxPorMm: pxPorMm
+      };
+
+      targetEl.classList.add('is-dragging');
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'grabbing';
+      e.preventDefault();
+      exibirHudFlutuante(e.clientX, e.clientY, obterTextoInicialHud(tipo, configPosicoes[formato]));
+    });
+
+    window.addEventListener('mousemove', onDragMouseMove);
+    window.addEventListener('mouseup', onDragMouseUp);
+  }
+
+  function obterTextoInicialHud(tipo, conf) {
+    if (tipo === 'titulo') return `↕️ Título: ${conf.tituloTop} mm`;
+    if (tipo === 'preco') return `↕️ Preço: ${conf.precoTop} mm`;
+    if (tipo === 'cifrao') return `↔️ Cifrão R$: ${conf.cifraoMarginRight} mm`;
+    if (tipo === 'unidade') {
+      if (conf.unidadeMarginTop !== undefined) {
+        return `📦 Unidade: +${conf.unidadeMarginTop}mm top, +${conf.unidadeMarginLeft}mm esq`;
+      }
+      return `📦 Unidade: Top ${conf.unidadeTop}mm, Dir ${conf.unidadeRight}mm`;
+    }
+    if (tipo === 'validade') return `📅 Validade: Base ${conf.validadeBottom}mm, Dir ${conf.validadeRight}mm`;
+    if (tipo === 'atacado') return `🏷️ Atacado: Base ${conf.atacadoBottom}mm, Esq ${conf.atacadoLeft}mm`;
+    return 'Movendo...';
+  }
+
+  function onDragMouseMove(e) {
+    if (!dragAtivo) return;
+
+    const deltaX = (e.clientX - dragAtivo.startX) / dragAtivo.pxPorMm;
+    const deltaY = (e.clientY - dragAtivo.startY) / dragAtivo.pxPorMm;
+    const formato = dragAtivo.formato;
+    const init = dragAtivo.initialConfig;
+    const conf = configPosicoes[formato];
+
+    let textoHud = '';
+
+    if (dragAtivo.tipo === 'titulo') {
+      const maxTop = (formato === '2a5' ? 80 : 200);
+      const novo = Math.round(Math.max(5, Math.min(maxTop, init.tituloTop + deltaY)) * 10) / 10;
+      conf.tituloTop = novo;
+      textoHud = `↕️ Título: ${novo} mm`;
+      sincronizarControleSidebar('tituloTop', novo);
+
+    } else if (dragAtivo.tipo === 'preco') {
+      const maxTop = (formato === '2a5' ? 120 : 300);
+      const novo = Math.round(Math.max(10, Math.min(maxTop, init.precoTop + deltaY)) * 10) / 10;
+      conf.precoTop = novo;
+      textoHud = `↕️ Preço: ${novo} mm`;
+      sincronizarControleSidebar('precoTop', novo);
+
+    } else if (dragAtivo.tipo === 'cifrao') {
+      // Arrastar para esquerda afasta do número aumentando a margem
+      const novo = Math.round(Math.max(0, Math.min(30, init.cifraoMarginRight - deltaX)) * 10) / 10;
+      conf.cifraoMarginRight = novo;
+      textoHud = `↔️ Espaço R$: ${novo} mm`;
+      sincronizarControleSidebar('cifraoMarginRight', novo);
+
+    } else if (dragAtivo.tipo === 'unidade') {
+      if (formato === '2a5') {
+        const novoTop = Math.round(Math.max(0, Math.min(40, init.unidadeMarginTop + deltaY)) * 10) / 10;
+        const novoLeft = Math.round(Math.max(0, Math.min(45, init.unidadeMarginLeft + deltaX)) * 10) / 10;
+        conf.unidadeMarginTop = novoTop;
+        conf.unidadeMarginLeft = novoLeft;
+        textoHud = `📦 Unidade: Top +${novoTop}mm, Esq +${novoLeft}mm`;
+        sincronizarControleSidebar('unidadeMarginTop', novoTop);
+        sincronizarControleSidebar('unidadeMarginLeft', novoLeft);
+      } else {
+        const maxTop = (formato === 'a3' ? 380 : 290);
+        const novoTop = Math.round(Math.max(10, Math.min(maxTop, init.unidadeTop + deltaY)) * 10) / 10;
+        const novoRight = Math.round(Math.max(0, Math.min(120, init.unidadeRight - deltaX)) * 10) / 10;
+        conf.unidadeTop = novoTop;
+        conf.unidadeRight = novoRight;
+        textoHud = `📦 Unidade: Top ${novoTop}mm, Dir ${novoRight}mm`;
+        sincronizarControleSidebar('unidadeTop', novoTop);
+        sincronizarControleSidebar('unidadeRight', novoRight);
+      }
+
+    } else if (dragAtivo.tipo === 'validade') {
+      // Arrastar para cima aumenta bottom; arrastar para esquerda aumenta right
+      const novoBottom = Math.round(Math.max(5, Math.min(150, init.validadeBottom - deltaY)) * 10) / 10;
+      const novoRight = Math.round(Math.max(0, Math.min(100, init.validadeRight - deltaX)) * 10) / 10;
+      conf.validadeBottom = novoBottom;
+      conf.validadeRight = novoRight;
+      textoHud = `📅 Validade: Base ${novoBottom}mm, Dir ${novoRight}mm`;
+      sincronizarControleSidebar('validadeBottom', novoBottom);
+      sincronizarControleSidebar('validadeRight', novoRight);
+
+    } else if (dragAtivo.tipo === 'atacado') {
+      // Arrastar para cima aumenta bottom; arrastar para direita aumenta left
+      const novoBottom = Math.round(Math.max(5, Math.min(150, init.atacadoBottom - deltaY)) * 10) / 10;
+      const novoLeft = Math.round(Math.max(0, Math.min(100, init.atacadoLeft + deltaX)) * 10) / 10;
+      conf.atacadoBottom = novoBottom;
+      conf.atacadoLeft = novoLeft;
+      textoHud = `🏷️ Atacado: Base ${novoBottom}mm, Esq ${novoLeft}mm`;
+      sincronizarControleSidebar('atacadoBottom', novoBottom);
+      sincronizarControleSidebar('atacadoLeft', novoLeft);
+    }
+
+    gerarCssPosicionamento();
+    exibirHudFlutuante(e.clientX, e.clientY, textoHud);
+  }
+
+  function sincronizarControleSidebar(prop, valor) {
+    const badge = document.getElementById(`badge-val-${prop}`);
+    if (badge) badge.textContent = `${valor} mm`;
+    const input = document.getElementById(`slider-${prop}`);
+    if (input && input.value != valor) input.value = valor;
+  }
+
+  function onDragMouseUp() {
+    if (!dragAtivo) return;
+
+    if (dragAtivo.element) {
+      dragAtivo.element.classList.remove('is-dragging');
+    }
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    ocultarHudFlutuante();
+    salvarPosicoesSilencioso();
+    dragAtivo = null;
+  }
+
+  function exibirHudFlutuante(clientX, clientY, texto) {
+    const hud = document.getElementById('dragHudBadge');
+    if (!hud) return;
+    hud.textContent = texto;
+    hud.style.left = `${clientX + 14}px`;
+    hud.style.top = `${clientY + 14}px`;
+    hud.style.display = 'block';
+  }
+
+  function ocultarHudFlutuante() {
+    const hud = document.getElementById('dragHudBadge');
+    if (hud) hud.style.display = 'none';
+  }
+
   window.onload = () => {
     carregarUsuario();
     atualizarListaDeTexto();
     gerarCssPosicionamento();
     construirPainelAjustes();
+    inicializarMotorDrag();
   };
 </script>
 
