@@ -38,6 +38,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(SESSION_SECRET));
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
 
 // Rate Limiter: Máximo de 5 tentativas de login a cada 15 minutos por IP
 const loginLimiter = rateLimit({

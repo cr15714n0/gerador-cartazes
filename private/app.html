@@ -398,6 +398,158 @@
       transform: translateX(20px);
     }
 
+    /* Painel de Ajuste de Posições */
+    .panel-ajustes-wrapper {
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: #f8fafc;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .btn-toggle-ajustes {
+      width: 100%;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-toggle-ajustes:hover {
+      background: #f1f5f9;
+    }
+    .painel-ajustes-container {
+      padding: 12px;
+      border-top: 1px solid var(--border-color);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ajuste-grupo-header {
+      font-size: 11px;
+      font-weight: 800;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ajuste-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 4px;
+    }
+    .ajuste-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #334155;
+      font-weight: 600;
+    }
+    .ajuste-valor-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      background: #eff6ff;
+      color: #2563eb;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .ajuste-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-mini-step {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      font-size: 12px;
+      font-weight: bold;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .btn-mini-step:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .slider-posicao {
+      flex: 1;
+      height: 5px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      outline: none;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .btn-salvar-posicoes {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+      transition: all 0.2s;
+    }
+    .btn-salvar-posicoes:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    }
+    .btn-restaurar-posicoes {
+      width: 100%;
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 4px;
+    }
+    .btn-restaurar-posicoes:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #b91c1c;
+    }
+    .toast-aviso {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 8px;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+
     /* Editor de Texto de Produtos */
     .textarea-wrapper {
       position: relative;
@@ -801,38 +953,23 @@
     }
     .sheet-2a5 .poster-item:last-child { border-bottom: none; }
 
-    /* Simulação Visual de Fundo */
-    .bg-artwork { display: none; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-    .show-artwork .bg-artwork { display: block; }
-
-    .bg-top {
+    /* Fundo Oficial da Rede Xereta */
+    .bg-artwork {
+      display: none;
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 28%;
-      background: #8b2326;
-      color: #ffffff;
-      font-family: 'Impact', 'Arial Black', sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 42pt;
-      letter-spacing: 2px;
-      border-radius: 0 0 50% 50% / 0 0 25% 25%;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
     }
-
-    .bg-middle {
-      position: absolute;
-      top: 24%; left: 0; right: 0; bottom: 18%;
-      background: #ffd600;
-      border-radius: 50% 50% 0 0 / 18% 18% 0 0;
+    .show-artwork .bg-artwork {
+      display: block;
     }
-
-    .bg-bottom {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 20%;
-      background: #8b2326;
-      clip-path: polygon(0 35%, 100% 0, 100% 100%, 0% 100%);
+    .bg-img-artwork {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
     }
 
     .poster-content {
@@ -1361,6 +1498,15 @@
         height: 148.4mm !important;
         border-bottom: none !important;
       }
+      .show-artwork .bg-artwork {
+        display: block !important;
+      }
+      .bg-img-artwork {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: fill !important;
+        display: block !important;
+      }
     }
   </style>
 </head>
@@ -1433,6 +1579,39 @@
           <input type="checkbox" id="checkPreImpresso" checked onchange="renderizarTudo()">
           <span class="ios-slider"></span>
         </label>
+      </div>
+
+      <!-- Painel de Ajuste de Posições -->
+      <div class="panel-ajustes-wrapper">
+        <button type="button" class="btn-toggle-ajustes" onclick="togglePainelAjustes()">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 15px;">📐</span>
+            <span>Ajustar Posições dos Elementos</span>
+          </span>
+          <span id="iconeAjustes">▼</span>
+        </button>
+
+        <div id="painelAjustes" class="painel-ajustes-container" style="display: none;">
+          <div style="font-size: 11px; color: #1e40af; background: #eff6ff; border-left: 3px solid #2563eb; padding: 7px 9px; border-radius: 0 6px 6px 0; line-height: 1.4;">
+            💡 <strong>Dica:</strong> Desmarque <em>"Papel Pré-impresso"</em> acima para ver a arte de fundo da Rede Xereta enquanto ajusta cada elemento!
+          </div>
+
+          <div id="controlesAjusteDinamicos">
+            <!-- Gerado via JS de acordo com o formato ativo -->
+          </div>
+
+          <div style="margin-top: 4px;">
+            <button type="button" class="btn-salvar-posicoes" onclick="salvarPosicoes()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Salvar Posições para este Formato
+            </button>
+            <button type="button" class="btn-restaurar-posicoes" onclick="restaurarPosicoesPadrao()">
+              🔄 Restaurar Padrões Originais
+            </button>
+          </div>
+
+          <div id="toastAvisoPosicoes" class="toast-aviso"></div>
+        </div>
       </div>
 
       <!-- Lista de Produtos -->
@@ -1867,12 +2046,11 @@ COXA SOBRE COXA 8,79 KG</textarea>
       const { atacadoHTML, validadeHTML } = resolverDadosExtras(item);
       const estilos = calcularEstiloTitulo(item.descricao, item.caracteristica, formato);
       const precoEstilos = calcularEstiloPreco(item.inteiro, formato);
+      const imgFundo = (formato === 'a4_land') ? '/assets/bg-landscape.png' : '/assets/bg-portrait.png';
       return `
         <div class="poster-item ${ehPreImpresso ? '' : 'show-artwork'}" data-idx="${idx}">
           <div class="bg-artwork">
-            <div class="bg-top">OFERTA</div>
-            <div class="bg-middle"></div>
-            <div class="bg-bottom"></div>
+            <img src="${imgFundo}" alt="Fundo Rede Xereta" class="bg-img-artwork">
           </div>
           <div class="poster-content">
             <div class="title-container">
@@ -1904,9 +2082,7 @@ COXA SOBRE COXA 8,79 KG</textarea>
       return `
         <div class="poster-item ${ehPreImpresso ? '' : 'show-artwork'}" data-idx="${idx}">
           <div class="bg-artwork">
-            <div class="bg-top">OFERTA</div>
-            <div class="bg-middle"></div>
-            <div class="bg-bottom"></div>
+            <img src="/assets/bg-portrait.png" alt="Fundo Rede Xereta" class="bg-img-artwork">
           </div>
           <div class="poster-content">
             <div class="title-container">
@@ -2049,6 +2225,8 @@ COXA SOBRE COXA 8,79 KG</textarea>
     if (badgeBtn) badgeBtn.textContent = textoFolhas;
 
     ajustarTamanhoFolhaImpressao(formato);
+    gerarCssPosicionamento();
+    construirPainelAjustes();
   }
 
   function ajustarTamanhoFolhaImpressao(formato) {
@@ -2068,9 +2246,254 @@ COXA SOBRE COXA 8,79 KG</textarea>
     }
   }
 
+  /* ========================================================
+     PAINEL E GERENCIADOR DE POSIÇÕES DINÂMICAS & SALVAMENTO
+     ======================================================== */
+  const posicoesPadrao = {
+    a4: {
+      tituloTop: 76,
+      precoTop: 130,
+      cifraoMarginRight: 6,
+      unidadeTop: 180,
+      unidadeRight: 25,
+      validadeBottom: 73,
+      validadeRight: 14,
+      atacadoBottom: 67,
+      atacadoLeft: 14
+    },
+    a4_land: {
+      tituloTop: 48,
+      precoTop: 86,
+      cifraoMarginRight: 5,
+      unidadeTop: 115,
+      unidadeRight: 56,
+      validadeBottom: 60,
+      validadeRight: 20,
+      atacadoBottom: 50,
+      atacadoLeft: 14
+    },
+    '2a5': {
+      tituloTop: 36,
+      precoTop: 71,
+      cifraoMarginRight: 4,
+      unidadeMarginTop: 8,
+      unidadeMarginLeft: 9,
+      validadeBottom: 50,
+      validadeRight: 6,
+      atacadoBottom: 39,
+      atacadoLeft: 8
+    },
+    a3: {
+      tituloTop: 110,
+      precoTop: 185,
+      cifraoMarginRight: 8,
+      unidadeTop: 255,
+      unidadeRight: 35,
+      validadeBottom: 95,
+      validadeRight: 25,
+      atacadoBottom: 92,
+      atacadoLeft: 28
+    }
+  };
+
+  let configPosicoes = carregarPosicoes();
+
+  function carregarPosicoes() {
+    try {
+      const salvo = localStorage.getItem('cartazes_posicoes_v2');
+      if (salvo) {
+        const parsed = JSON.parse(salvo);
+        const resultado = {};
+        for (const fmt in posicoesPadrao) {
+          resultado[fmt] = Object.assign({}, posicoesPadrao[fmt], parsed[fmt] || {});
+        }
+        return resultado;
+      }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(posicoesPadrao));
+  }
+
+  function salvarPosicoes() {
+    try {
+      localStorage.setItem('cartazes_posicoes_v2', JSON.stringify(configPosicoes));
+      const toast = document.getElementById('toastAvisoPosicoes');
+      if (toast) {
+        toast.textContent = '✅ Posições salvas com sucesso! Ficarão fixas.';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+      }
+    } catch (e) {
+      alert('Erro ao salvar no navegador.');
+    }
+  }
+
+  function restaurarPosicoesPadrao() {
+    const formato = document.getElementById('formatoPapel').value;
+    if (confirm('Deseja restaurar as posições padrão originais deste formato?')) {
+      configPosicoes[formato] = Object.assign({}, posicoesPadrao[formato]);
+      salvarPosicoes();
+      construirPainelAjustes();
+      gerarCssPosicionamento();
+    }
+  }
+
+  function atualizarPosicao(prop, valor) {
+    const formato = document.getElementById('formatoPapel').value;
+    if (!configPosicoes[formato]) configPosicoes[formato] = Object.assign({}, posicoesPadrao[formato]);
+    configPosicoes[formato][prop] = parseFloat(valor);
+    const badge = document.getElementById(`badge-val-${prop}`);
+    if (badge) badge.textContent = `${valor} mm`;
+    const input = document.getElementById(`slider-${prop}`);
+    if (input && input.value != valor) input.value = valor;
+    gerarCssPosicionamento();
+  }
+
+  function stepPosicao(prop, delta) {
+    const formato = document.getElementById('formatoPapel').value;
+    const atual = (configPosicoes[formato] && configPosicoes[formato][prop] !== undefined)
+      ? configPosicoes[formato][prop]
+      : posicoesPadrao[formato][prop];
+    const novo = Math.round((atual + delta) * 10) / 10;
+    atualizarPosicao(prop, novo);
+  }
+
+  function togglePainelAjustes() {
+    const p = document.getElementById('painelAjustes');
+    const icone = document.getElementById('iconeAjustes');
+    if (!p) return;
+    const aberto = p.style.display === 'block';
+    p.style.display = aberto ? 'none' : 'block';
+    if (icone) icone.textContent = aberto ? '▼' : '▲';
+    if (!aberto) {
+      construirPainelAjustes();
+    }
+  }
+
+  function gerarCssPosicionamento() {
+    const formato = document.getElementById('formatoPapel').value;
+    const p = (configPosicoes && configPosicoes[formato]) ? configPosicoes[formato] : posicoesPadrao[formato];
+
+    let css = '';
+    if (formato === '2a5') {
+      css = `
+        .sheet-2a5 .title-container { top: ${p.tituloTop}mm !important; }
+        .sheet-2a5 .price-box-a5 { top: ${p.precoTop}mm !important; }
+        .sheet-2a5 .price-currency { margin-right: ${p.cifraoMarginRight}mm !important; }
+        .sheet-2a5 .price-unit { margin-top: ${p.unidadeMarginTop}mm !important; margin-left: ${p.unidadeMarginLeft}mm !important; }
+        .sheet-2a5 .validade-center { bottom: ${p.validadeBottom}mm !important; right: ${p.validadeRight}mm !important; }
+        .sheet-2a5 .extra-info-left { bottom: ${p.atacadoBottom}mm !important; left: ${p.atacadoLeft}mm !important; }
+      `;
+    } else if (formato === 'a4_land') {
+      css = `
+        .sheet-a4-land .title-container { top: ${p.tituloTop}mm !important; }
+        .sheet-a4-land .price-box { top: ${p.precoTop}mm !important; }
+        .sheet-a4-land .price-currency { margin-right: ${p.cifraoMarginRight}mm !important; }
+        .sheet-a4-land .price-unit { top: ${p.unidadeTop}mm !important; right: ${p.unidadeRight}mm !important; }
+        .sheet-a4-land .validade-center { bottom: ${p.validadeBottom}mm !important; right: ${p.validadeRight}mm !important; }
+        .sheet-a4-land .extra-info-left { bottom: ${p.atacadoBottom}mm !important; left: ${p.atacadoLeft}mm !important; }
+      `;
+    } else if (formato === 'a3') {
+      css = `
+        .sheet-a3 .title-container { top: ${p.tituloTop}mm !important; }
+        .sheet-a3 .price-box { top: ${p.precoTop}mm !important; }
+        .sheet-a3 .price-currency { margin-right: ${p.cifraoMarginRight}mm !important; }
+        .sheet-a3 .price-unit { top: ${p.unidadeTop}mm !important; right: ${p.unidadeRight}mm !important; }
+        .sheet-a3 .validade-center { bottom: ${p.validadeBottom}mm !important; right: ${p.validadeRight}mm !important; }
+        .sheet-a3 .extra-info-left { bottom: ${p.atacadoBottom}mm !important; left: ${p.atacadoLeft}mm !important; }
+      `;
+    } else {
+      css = `
+        .sheet-a4 .title-container { top: ${p.tituloTop}mm !important; }
+        .sheet-a4 .price-box { top: ${p.precoTop}mm !important; }
+        .sheet-a4 .price-currency { margin-right: ${p.cifraoMarginRight}mm !important; }
+        .sheet-a4 .price-unit { top: ${p.unidadeTop}mm !important; right: ${p.unidadeRight}mm !important; }
+        .sheet-a4 .validade-center { bottom: ${p.validadeBottom}mm !important; right: ${p.validadeRight}mm !important; }
+        .sheet-a4 .extra-info-left { bottom: ${p.atacadoBottom}mm !important; left: ${p.atacadoLeft}mm !important; }
+      `;
+    }
+
+    let tag = document.getElementById('estilo-posicionamento-dinamico');
+    if (!tag) {
+      tag = document.createElement('style');
+      tag.id = 'estilo-posicionamento-dinamico';
+      document.head.appendChild(tag);
+    }
+    tag.innerHTML = css;
+  }
+
+  function gerarLinhaControle(prop, rotulo, min, max, step, valorAtual) {
+    return `
+      <div class="ajuste-row">
+        <div class="ajuste-label-row">
+          <span>${rotulo}</span>
+          <span id="badge-val-${prop}" class="ajuste-valor-badge">${valorAtual} mm</span>
+        </div>
+        <div class="ajuste-slider-wrap">
+          <button type="button" class="btn-mini-step" onclick="stepPosicao('${prop}', -${step})" title="Diminuir">–</button>
+          <input type="range" id="slider-${prop}" class="slider-posicao" min="${min}" max="${max}" step="${step}" value="${valorAtual}" oninput="atualizarPosicao('${prop}', this.value)">
+          <button type="button" class="btn-mini-step" onclick="stepPosicao('${prop}', ${step})" title="Aumentar">+</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function construirPainelAjustes() {
+    const container = document.getElementById('controlesAjusteDinamicos');
+    if (!container) return;
+    const formato = document.getElementById('formatoPapel').value;
+    const p = (configPosicoes && configPosicoes[formato]) ? configPosicoes[formato] : posicoesPadrao[formato];
+
+    let html = '';
+
+    // Grupo 1: Título
+    html += `
+      <div class="ajuste-grupo-header">🏷️ Título do Produto</div>
+      ${gerarLinhaControle('tituloTop', 'Altura do Título (Top)', 5, (formato === '2a5' ? 80 : 200), 1, p.tituloTop)}
+    `;
+
+    // Grupo 2: Preço & R$
+    html += `
+      <div class="ajuste-grupo-header" style="margin-top: 8px;">💰 Preço e Cifrão (R$)</div>
+      ${gerarLinhaControle('precoTop', 'Altura do Preço (Top)', 10, (formato === '2a5' ? 120 : 300), 1, p.precoTop)}
+      ${gerarLinhaControle('cifraoMarginRight', 'Espaço do R$ até o Número', 0, 20, 0.5, p.cifraoMarginRight)}
+    `;
+
+    // Grupo 3: Unidade (cada / kg)
+    html += `<div class="ajuste-grupo-header" style="margin-top: 8px;">📦 Unidade (cada / kg)</div>`;
+    if (formato === '2a5') {
+      html += `
+        ${gerarLinhaControle('unidadeMarginTop', 'Abaixo dos Centavos (Top)', 0, 30, 0.5, p.unidadeMarginTop)}
+        ${gerarLinhaControle('unidadeMarginLeft', 'Deslocamento Direita (Left)', 0, 35, 0.5, p.unidadeMarginLeft)}
+      `;
+    } else {
+      html += `
+        ${gerarLinhaControle('unidadeTop', 'Altura da Unidade (Top)', 20, (formato === 'a3' ? 360 : 280), 1, p.unidadeTop)}
+        ${gerarLinhaControle('unidadeRight', 'Posição Direita (Right)', 0, 100, 1, p.unidadeRight)}
+      `;
+    }
+
+    // Grupo 4: Validade
+    html += `
+      <div class="ajuste-grupo-header" style="margin-top: 8px;">📅 Validade ("Oferta válida...")</div>
+      ${gerarLinhaControle('validadeBottom', 'Distância da Base (Bottom)', 5, 140, 1, p.validadeBottom)}
+      ${gerarLinhaControle('validadeRight', 'Distância da Direita (Right)', 0, 80, 1, p.validadeRight)}
+    `;
+
+    // Grupo 5: Atacado
+    html += `
+      <div class="ajuste-grupo-header" style="margin-top: 8px;">🏷️ Embalagem / Atacado</div>
+      ${gerarLinhaControle('atacadoBottom', 'Distância da Base (Bottom)', 5, 140, 1, p.atacadoBottom)}
+      ${gerarLinhaControle('atacadoLeft', 'Distância da Esquerda (Left)', 0, 80, 1, p.atacadoLeft)}
+    `;
+
+    container.innerHTML = html;
+  }
+
   window.onload = () => {
     carregarUsuario();
     atualizarListaDeTexto();
+    gerarCssPosicionamento();
+    construirPainelAjustes();
   };
 </script>
 
